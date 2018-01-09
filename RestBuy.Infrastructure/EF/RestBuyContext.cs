@@ -14,6 +14,7 @@ namespace RestBuy.Infrastructure.EF
         const string productTable = "Product";
         const string orderTable = "Order";
         const string orderItemTable = "OrderItem";
+        const string userTable = "User";
         const string stockAmount = "StockAmount";
 
         public RestBuyContext(DbContextOptions<RestBuyContext> options) : base(options)
@@ -23,13 +24,13 @@ namespace RestBuy.Infrastructure.EF
 
         public DbSet<Product> Products => Set<Product>();
         public DbSet<OrderItem> OrderItems => Set<OrderItem>();
-        public DbSet<Order> Order => Set<Order>();
-        public DbSet<StockAmount> StockAmounts
-            => Set<StockAmount>();
+        public DbSet<Order> Orders => Set<Order>();
+        public DbSet<User> Users => Set<User>();
+        public DbSet<StockAmount> StockAmounts => Set<StockAmount>();
 
 
 
-        // configure each of our entities.
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ForSqlServerUseSequenceHiLo(hiloName);
@@ -37,16 +38,35 @@ namespace RestBuy.Infrastructure.EF
             sequence.IncrementsBy(100);
             sequence.StartsAt(1000);
 
+
             modelBuilder.Entity<Product>(ConfigureProduct);
             modelBuilder.Entity<OrderItem>(ConfigureOrderItem);
             modelBuilder.Entity<Order>(ConfigureOrder);
-            modelBuilder.Entity<StockAmount>
-               (ConfigureStockAmount);
+            modelBuilder.Entity<User>(ConfigureUser);
+            modelBuilder.Entity<StockAmount>(ConfigureStockAmount);
 
 
         }
+        void ConfigureUser(EntityTypeBuilder<User> builder)
+        {
+            builder.ToTable(userTable);
 
-        // Product entity configuration
+            builder.HasKey(ci => ci.Id);
+
+            builder.Property(ci => ci.UserName)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            builder.HasIndex(c => c.UserName).IsUnique();
+
+            builder.Property(ci => ci.Password)
+
+                .IsRequired();
+
+        }
+
+
+
         void ConfigureProduct(EntityTypeBuilder<Product> builder)
         {
             builder.ToTable(productTable);
@@ -68,7 +88,19 @@ namespace RestBuy.Infrastructure.EF
 
         }
 
-        /// Order entity configuration
+        void ConfigureStockAmount(EntityTypeBuilder<StockAmount> builder)
+        {
+            builder.ToTable(stockAmount);
+
+            builder.HasKey(ci => ci.Id);
+
+            builder.Property(ci => ci.ProductId)
+                    .IsRequired();
+
+            builder.Property(ci => ci.Quantity)
+                    .IsRequired().IsConcurrencyToken();
+        }
+
         void ConfigureOrder(EntityTypeBuilder<Order> builder)
         {
             builder.ToTable(orderTable);
@@ -77,27 +109,13 @@ namespace RestBuy.Infrastructure.EF
 
             builder.Property(cb => cb.CreateDate)
                 .IsRequired();
+
             builder.Property(cb => cb.IsConfirmed).IsRequired();
+
             builder.Property(cb => cb.UserId).IsRequired();
             builder.HasMany(cb => cb.OrderItems).WithOne().IsRequired();
         }
 
-
-        void ConfigureStockAmount(EntityTypeBuilder<StockAmount> builder)
-        {
-            builder.ToTable(stockAmount);
-
-            builder.HasKey(ci => ci.Id);
-
-            builder.Property(ci => ci.ProductId)
-                .IsRequired();
-
-            builder.Property(ci => ci.Quantity)
-
-                .IsRequired().IsConcurrencyToken();
-        }
-
-        /// Order Item entity configuration
         void ConfigureOrderItem(EntityTypeBuilder<OrderItem> builder)
         {
             builder.ToTable(orderItemTable);
@@ -111,6 +129,8 @@ namespace RestBuy.Infrastructure.EF
                 .IsRequired();
             builder.Property(c => c.Quantity)
                 .IsRequired();
+
         }
+
     }
 }

@@ -11,9 +11,10 @@ using System;
 namespace RestBuy.Infrastructure.Migrations
 {
     [DbContext(typeof(RestBuyContext))]
-    partial class RestBuyContextModelSnapshot : ModelSnapshot
+    [Migration("20180108141851_User")]
+    partial class User
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -111,9 +112,6 @@ namespace RestBuy.Infrastructure.Migrations
                         .HasMaxLength(50);
 
                     b.HasKey("Id");
-
-                    b.HasIndex("UserName")
-                        .IsUnique();
 
                     b.ToTable("User");
                 });

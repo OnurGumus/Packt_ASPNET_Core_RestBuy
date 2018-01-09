@@ -1,11 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Restbuy.Application.Services.Core;
+using RestBuy.Application.Repos;
+using RestBuy.Application.Services;
+using RestBuy.Infrastructure.EF;
 
 namespace RestBuy.Web
 {
@@ -21,7 +22,15 @@ namespace RestBuy.Web
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddEntityFrameworkSqlServer()
+    .AddDbContext<RestBuyContext>(options =>
+        options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddScoped<IRegistrationService, RestBuyRegistrationService>();
+            services.AddScoped<IUoW, RestBuyUoW>();
+            services.AddScoped<IUserRepo, UserRepo>();
+
             services.AddMvc();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
